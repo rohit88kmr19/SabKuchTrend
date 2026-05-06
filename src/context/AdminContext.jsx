@@ -116,13 +116,18 @@ export function AdminProvider({ children }) {
         body: JSON.stringify(review),
       });
 
-      if (response.ok) {
-        const newReview = await response.json();
-        setReviews((prev) => [...prev, newReview]);
-        return newReview;
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to add review');
       }
+
+      const newReview = await response.json();
+      console.log('Review added successfully:', newReview);
+      setReviews((prev) => [...prev, newReview]);
+      return newReview;
     } catch (error) {
       console.error('Error adding review:', error);
+      throw error;
     }
   };
 

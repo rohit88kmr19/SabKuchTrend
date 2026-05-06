@@ -59,9 +59,16 @@ export default function ProductDetails() {
 
   // Filter reviews for this product
   useEffect(() => {
-    if (product && reviews) {
-      const filtered = reviews.filter((r) => r.productId === parseInt(product.id));
+    if (product && reviews && reviews.length > 0) {
+      const productIdNum = parseInt(product.id);
+      const filtered = reviews.filter((r) => {
+        const reviewProductId = parseInt(r.productId);
+        return reviewProductId === productIdNum;
+      });
+      console.log('Filtering reviews:', { productId: productIdNum, total: reviews.length, filtered: filtered.length });
       setProductReviews(filtered);
+    } else {
+      setProductReviews([]);
     }
   }, [product, reviews]);
 
@@ -91,18 +98,25 @@ export default function ProductDetails() {
 
     setSubmittingReview(true);
     try {
-      await addReview({
+      const reviewData = {
         productId: parseInt(product.id),
         author: reviewForm.author,
         rating: parseInt(reviewForm.rating),
         comment: reviewForm.comment,
-      });
-
-      setReviewForm({ author: '', rating: 5, comment: '' });
-      alert('Review added successfully!');
+      };
+      
+      console.log('Submitting review:', reviewData);
+      const result = await addReview(reviewData);
+      
+      if (result) {
+        setReviewForm({ author: '', rating: 5, comment: '' });
+        alert('Review added successfully!');
+      } else {
+        alert('Failed to add review. Please try again.');
+      }
     } catch (err) {
       console.error('Error adding review:', err);
-      alert('Failed to add review');
+      alert('Failed to add review: ' + err.message);
     } finally {
       setSubmittingReview(false);
     }
