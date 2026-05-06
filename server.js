@@ -43,13 +43,14 @@ const readDB = () => {
           },
         ],
         categories: ['electronics', 'jewelery', "men's clothing", "women's clothing"],
+        reviews: [],
       };
       fs.writeFileSync(DB_FILE, JSON.stringify(initialData, null, 2));
     }
     return JSON.parse(fs.readFileSync(DB_FILE, 'utf-8'));
   } catch (error) {
     console.error('Error reading database:', error);
-    return { products: [], categories: [] };
+    return { products: [], categories: [], reviews: [] };
   }
 };
 
@@ -190,6 +191,81 @@ app.get('/api/categories', (req, res) => {
     res.json(db.categories);
   } catch (error) {
     res.status(500).json({ error: 'Failed to fetch categories' });
+  }
+});
+
+// ==================== REVIEW ROUTES ====================
+
+// GET all reviews
+app.get('/api/reviews', (req, res) => {
+  try {
+    const db = readDB();
+    res.json(db.reviews || []);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to fetch reviews' });
+  }
+});
+
+// GET reviews by product ID
+app.get('/api/reviews/product/:productId', (req, res) => {
+  try {
+    const db = readDB();
+    const productReviews = (db.reviews || []).filter(
+      (r) => r.productId === parseInt(req.params.productId)
+    );
+    res.json(productReviews);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to fetch reviews' });
+  }
+});
+
+// CREATE review
+app.post('/api/reviews', (req, res) => {
+  try {
+    const db = readDB();
+    const { productId, author, rating, comment } = req.body;
+
+    if (!productId || !author || !rating || !comment) {
+      return res.status(400).json({ error: 'Missing required fields' });
+    }
+
+    const newReview = {
+      id: Math.max(...(db.reviews || []).map((r) => r.id || 0), 0) + 1,
+      productId: parseInt(productId),
+      author,
+      rating: parseInt(rating),
+      comment,
+      createdAt: new Date().toISOString(),
+    };
+
+    if (!db.reviews) {
+      db.reviews = [];
+    }
+    db.reviews.push(newReview);
+    writeDB(db);
+    res.status(201).json(newReview);
+  } catch (error) {
+    console.error('Error creating review:', error);
+    res.status(500).json({ error: 'Failed to create review' });
+  }
+});
+
+// DELETE review
+app.delete('/api/reviews/:id', (req, res) => {
+  try {
+    const db = readDB();
+    const reviewIndex = (db.reviews || []).findIndex((r) => r.id === parseInt(req.params.id));
+
+    if (reviewIndex === -1) {
+      return res.status(404).json({ error: 'Review not found' });
+    }
+
+    const deletedReview = db.reviews.splice(reviewIndex, 1);
+    writeDB(db);
+    res.json({ message: 'Review deleted', review: deletedReview[0] });
+  } catch (error) {
+    console.error('Error deleting review:', error);
+    res.status(500).json({ error: 'Failed to delete review' });
   }
 });
 

@@ -14,11 +14,18 @@ import ErrorMessage from '../components/ErrorMessage';
 export default function ProductDetails() {
   const { id } = useParams();
   const { addToCart } = useCart();
-  const { products: adminProducts } = useAdmin();
+  const { products: adminProducts, reviews, addReview } = useAdmin();
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [quantity, setQuantity] = useState(1);
+  const [productReviews, setProductReviews] = useState([]);
+  const [reviewForm, setReviewForm] = useState({
+    author: '',
+    rating: 5,
+    comment: '',
+  });
+  const [submittingReview, setSubmittingReview] = useState(false);
 
   // Fetch product details
   useEffect(() => {
@@ -50,6 +57,14 @@ export default function ProductDetails() {
     }
   }, [id, adminProducts]);
 
+  // Filter reviews for this product
+  useEffect(() => {
+    if (product && reviews) {
+      const filtered = reviews.filter((r) => r.productId === parseInt(product.id));
+      setProductReviews(filtered);
+    }
+  }, [product, reviews]);
+
   // Handle add to cart
   const handleAddToCart = () => {
     for (let i = 0; i < quantity; i++) {
@@ -63,6 +78,34 @@ export default function ProductDetails() {
   const handleQuantityChange = (e) => {
     const value = parseInt(e.target.value, 10);
     setQuantity(Math.max(1, value));
+  };
+
+  // Handle review submission
+  const handleReviewSubmit = async (e) => {
+    e.preventDefault();
+
+    if (!reviewForm.author.trim() || !reviewForm.comment.trim()) {
+      alert('Please fill in all fields');
+      return;
+    }
+
+    setSubmittingReview(true);
+    try {
+      await addReview({
+        productId: parseInt(product.id),
+        author: reviewForm.author,
+        rating: parseInt(reviewForm.rating),
+        comment: reviewForm.comment,
+      });
+
+      setReviewForm({ author: '', rating: 5, comment: '' });
+      alert('Review added successfully!');
+    } catch (err) {
+      console.error('Error adding review:', err);
+      alert('Failed to add review');
+    } finally {
+      setSubmittingReview(false);
+    }
   };
 
   if (loading) return <LoadingSpinner />;
@@ -80,7 +123,7 @@ export default function ProductDetails() {
         </div>
 
         {/* Product Details */}
-        <div className="bg-white rounded-lg shadow-md overflow-hidden">
+        <div className="bg-white rounded-lg shadow-md overflow-hidden mb-8">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 p-8">
             {/* Product Image */}
             <div className="flex items-center justify-center bg-gray-100 rounded-lg p-8">
@@ -176,6 +219,103 @@ export default function ProductDetails() {
                 Continue Shopping
               </Link>
             </div>
+          </div>
+        </div>
+
+        {/* Reviews Section */}
+        <div className="bg-white rounded-lg shadow-md p-8">
+          <h2 className="text-2xl font-bold text-gray-800 mb-6">Reviews ({productReviews.length})</h2>
+
+          {/* Add Review Form */}
+          <div className="bg-gray-50 rounded-lg p-6 mb-8 border border-gray-200">
+            <h3 className="text-lg font-semibold text-gray-800 mb-4">Leave a Review</h3>
+            <form onSubmit={handleReviewSubmit}>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                {/* Author Name */}
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    Your Name
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="Enter your name"
+                    value={reviewForm.author}
+                    onChange={(e) => setReviewForm({ ...reviewForm, author: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
+                    disabled={submittingReview}
+                  />
+                </div>
+
+                {/* Rating */}
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    Rating
+                  </label>
+                  <select
+                    value={reviewForm.rating}
+                    onChange={(e) => setReviewForm({ ...reviewForm, rating: parseInt(e.target.value) })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
+                    disabled={submittingReview}
+                  >
+                    <option value="5">★★★★★ (5 stars)</option>
+                    <option value="4">★★★★☆ (4 stars)</option>
+                    <option value="3">★★★☆☆ (3 stars)</option>
+                    <option value="2">★★☆☆☆ (2 stars)</option>
+                    <option value="1">★☆☆☆☆ (1 star)</option>
+                  </select>
+                </div>
+              </div>
+
+              {/* Comment */}
+              <div className="mb-4">
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Your Review
+                </label>
+                <textarea
+                  placeholder="Write your review here..."
+                  value={reviewForm.comment}
+                  onChange={(e) => setReviewForm({ ...reviewForm, comment: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
+                  rows="4"
+                  disabled={submittingReview}
+                />
+              </div>
+
+              {/* Submit Button */}
+              <button
+                type="submit"
+                disabled={submittingReview}
+                className="btn-primary"
+              >
+                {submittingReview ? 'Submitting...' : '✓ Submit Review'}
+              </button>
+            </form>
+          </div>
+
+          {/* Reviews List */}
+          <div className="space-y-4">
+            {productReviews.length === 0 ? (
+              <p className="text-gray-500 text-center py-8">No reviews yet. Be the first to review this product!</p>
+            ) : (
+              productReviews.map((review) => (
+                <div key={review.id} className="border border-gray-200 rounded-lg p-4">
+                  <div className="flex justify-between items-start mb-2">
+                    <div>
+                      <p className="font-semibold text-gray-800">{review.author}</p>
+                      <div className="flex items-center gap-2">
+                        <span className="text-yellow-400">
+                          {'★'.repeat(review.rating)}{'☆'.repeat(5 - review.rating)}
+                        </span>
+                        <span className="text-sm text-gray-500">
+                          {new Date(review.createdAt).toLocaleDateString()}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                  <p className="text-gray-700">{review.comment}</p>
+                </div>
+              ))
+            )}
           </div>
         </div>
       </div>

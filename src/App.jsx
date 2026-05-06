@@ -25,6 +25,7 @@ import AdminLogin from './pages/AdminLogin';
 import AdminDashboard from './pages/AdminDashboard';
 import AdminProducts from './pages/AdminProducts';
 import AdminOrders from './pages/AdminOrders';
+import AdminReviews from './pages/AdminReviews';
 import AdminEmails from './pages/AdminEmails';
 
 /**
@@ -72,6 +73,14 @@ function App() {
               element={
                 <ProtectedAdminRoute>
                   <AdminOrders />
+                </ProtectedAdminRoute>
+              }
+            />
+            <Route
+              path="/admin/reviews"
+              element={
+                <ProtectedAdminRoute>
+                  <AdminReviews />
                 </ProtectedAdminRoute>
               }
             />

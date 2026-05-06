@@ -44,6 +44,12 @@ export default function AdminNavbar() {
               📋 Orders
             </Link>
             <Link
+              to="/admin/reviews"
+              className="text-gray-300 hover:text-white transition flex items-center gap-2"
+            >
+              ⭐ Reviews
+            </Link>
+            <Link
               to="/admin/emails"
               className="text-gray-300 hover:text-white transition flex items-center gap-2"
             >

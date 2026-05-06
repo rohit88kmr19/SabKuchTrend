@@ -2,8 +2,8 @@ import { createContext, useContext, useState, useEffect } from 'react';
 
 /**
  * Admin Context
- * Manages admin state including products, orders, and email logs
- * Products are synced with the backend API
+ * Manages admin state including products, orders, email logs, and reviews
+ * Products and reviews are synced with the backend API
  */
 const AdminContext = createContext();
 const API_URL = 'http://localhost:5000/api';
@@ -12,26 +12,36 @@ export function AdminProvider({ children }) {
   const [products, setProducts] = useState([]);
   const [orders, setOrders] = useState([]);
   const [emailLogs, setEmailLogs] = useState([]);
+  const [reviews, setReviews] = useState([]);
   const [adminUser, setAdminUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // Fetch products from backend on mount
+  // Fetch products and reviews from backend on mount
   useEffect(() => {
-    const fetchProducts = async () => {
+    const fetchData = async () => {
       try {
-        const response = await fetch(`${API_URL}/products`);
-        if (response.ok) {
-          const data = await response.json();
+        const [productsRes, reviewsRes] = await Promise.all([
+          fetch(`${API_URL}/products`),
+          fetch(`${API_URL}/reviews`),
+        ]);
+
+        if (productsRes.ok) {
+          const data = await productsRes.json();
           setProducts(data);
         }
+
+        if (reviewsRes.ok) {
+          const data = await reviewsRes.json();
+          setReviews(data);
+        }
       } catch (error) {
-        console.error('Error fetching products:', error);
+        console.error('Error fetching data:', error);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchProducts();
+    fetchData();
 
     // Load other data from localStorage
     const savedOrders = localStorage.getItem('adminOrders');
@@ -97,6 +107,40 @@ export function AdminProvider({ children }) {
     }
   };
 
+  // Add review via API
+  const addReview = async (review) => {
+    try {
+      const response = await fetch(`${API_URL}/reviews`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(review),
+      });
+
+      if (response.ok) {
+        const newReview = await response.json();
+        setReviews((prev) => [...prev, newReview]);
+        return newReview;
+      }
+    } catch (error) {
+      console.error('Error adding review:', error);
+    }
+  };
+
+  // Delete review via API
+  const deleteReview = async (id) => {
+    try {
+      const response = await fetch(`${API_URL}/reviews/${id}`, {
+        method: 'DELETE',
+      });
+
+      if (response.ok) {
+        setReviews((prev) => prev.filter((r) => r.id !== id));
+      }
+    } catch (error) {
+      console.error('Error deleting review:', error);
+    }
+  };
+
   // Update order status
   const updateOrderStatus = (orderId, status) => {
     const updated = orders.map((o) =>
@@ -148,10 +192,13 @@ export function AdminProvider({ children }) {
         products,
         orders,
         emailLogs,
+        reviews,
         adminUser,
         loading,
         saveProduct,
         deleteProduct,
+        addReview,
+        deleteReview,
         updateOrderStatus,
         sendOrderEmail,
         loginAdmin,
