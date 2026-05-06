@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { getProducts, getCategories } from '../services/api';
-import { useAdmin } from '../context/AdminContext';
 import ProductCard from '../components/ProductCard';
 import SearchBar from '../components/SearchBar';
 import LoadingSpinner from '../components/LoadingSpinner';
@@ -15,7 +14,6 @@ import { searchProducts, filterByCategory, sortProducts } from '../utils/helpers
 export default function Products() {
   const [searchParams] = useSearchParams();
   const categoryParam = searchParams.get('category');
-  const { products: adminProducts } = useAdmin();
 
   const [products, setProducts] = useState([]);
   const [filteredProducts, setFilteredProducts] = useState([]);
@@ -41,10 +39,9 @@ export default function Products() {
           getCategories(),
         ]);
 
-        // Combine API products with admin products
-        const allProducts = [...productsData, ...adminProducts];
-        setProducts(allProducts);
-        setFilteredProducts(allProducts);
+        // Use API products as single source of truth
+        setProducts(productsData);
+        setFilteredProducts(productsData);
         setCategories(categoriesData);
       } catch (err) {
         console.error('Error fetching data:', err);
@@ -55,7 +52,7 @@ export default function Products() {
     };
 
     fetchData();
-  }, [adminProducts]);
+  }, []);
 
   // Apply filters and search
   useEffect(() => {

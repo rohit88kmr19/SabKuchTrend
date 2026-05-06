@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { getProducts, getCategories } from '../services/api';
-import { useAdmin } from '../context/AdminContext';
 import ProductCard from '../components/ProductCard';
 import LoadingSpinner from '../components/LoadingSpinner';
 import ErrorMessage from '../components/ErrorMessage';
@@ -11,7 +10,6 @@ import ErrorMessage from '../components/ErrorMessage';
  * Professional landing page with featured products and categories
  */
 export default function Home() {
-  const { products: adminProducts } = useAdmin();
   const [categories, setCategories] = useState([]);
   const [featuredProducts, setFeaturedProducts] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -30,11 +28,8 @@ export default function Home() {
           getCategories(),
         ]);
 
-        // Combine API products with admin products
-        const allProducts = [...productsData, ...adminProducts];
-        
-        // Set featured products (first 8)
-        setFeaturedProducts(allProducts.slice(0, 8));
+        // Set featured products (first 8) from API
+        setFeaturedProducts(productsData.slice(0, 8));
         setCategories(categoriesData);
       } catch (err) {
         console.error('Error fetching data:', err);
@@ -45,7 +40,7 @@ export default function Home() {
     };
 
     fetchData();
-  }, [adminProducts]);
+  }, []);
 
   // Handle retry
   const handleRetry = () => {

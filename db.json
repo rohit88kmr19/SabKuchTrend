@@ -1,5 +1,17 @@
 {
-  "products": [],
+  "products": [
+    {
+      "id": 1,
+      "title": "Test",
+      "price": 56,
+      "category": "electronics",
+      "description": "Testing ",
+      "image": "",
+      "rating": 5,
+      "stock": 50,
+      "createdAt": "2026-05-06T10:55:00.956Z"
+    }
+  ],
   "categories": [
     "electronics",
     "jewelery",
