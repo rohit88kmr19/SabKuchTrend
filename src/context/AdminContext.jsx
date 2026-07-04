@@ -146,6 +146,52 @@ export function AdminProvider({ children }) {
     }
   };
 
+  // Approve review via API
+  const approveReview = async (id) => {
+    try {
+      const response = await fetch(`${API_URL}/reviews/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ isApproved: true }),
+      });
+
+      if (response.ok) {
+        const updatedReview = await response.json();
+        setReviews((prev) =>
+          prev.map((r) => (r.id === id ? updatedReview : r))
+        );
+      }
+    } catch (error) {
+      console.error('Error approving review:', error);
+    }
+  };
+
+  // Reject review via API
+  const rejectReview = async (id) => {
+    try {
+      const response = await fetch(`${API_URL}/reviews/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ isApproved: false }),
+      });
+
+      if (response.ok) {
+        const updatedReview = await response.json();
+        setReviews((prev) =>
+          prev.map((r) => (r.id === id ? updatedReview : r))
+        );
+      }
+    } catch (error) {
+      console.error('Error rejecting review:', error);
+    }
+  };
+
+  // Delete order from localStorage
+  const deleteOrder = (orderId) => {
+    const updated = orders.filter((o) => o.id !== orderId);
+    updateOrders(updated);
+  };
+
   // Update order status
   const updateOrderStatus = (orderId, status) => {
     const updated = orders.map((o) =>
@@ -204,6 +250,9 @@ export function AdminProvider({ children }) {
         deleteProduct,
         addReview,
         deleteReview,
+        approveReview,
+        rejectReview,
+        deleteOrder,
         updateOrderStatus,
         sendOrderEmail,
         loginAdmin,

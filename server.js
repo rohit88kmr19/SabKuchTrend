@@ -235,6 +235,7 @@ app.post('/api/reviews', (req, res) => {
       author,
       rating: parseInt(rating),
       comment,
+      isApproved: null,
       createdAt: new Date().toISOString(),
     };
 
@@ -266,6 +267,32 @@ app.delete('/api/reviews/:id', (req, res) => {
   } catch (error) {
     console.error('Error deleting review:', error);
     res.status(500).json({ error: 'Failed to delete review' });
+  }
+});
+
+// UPDATE review approval status
+app.patch('/api/reviews/:id', (req, res) => {
+  try {
+    const db = readDB();
+    const { isApproved } = req.body;
+
+    if (isApproved === undefined) {
+      return res.status(400).json({ error: 'isApproved field is required' });
+    }
+
+    const review = (db.reviews || []).find((r) => r.id === parseInt(req.params.id));
+
+    if (!review) {
+      return res.status(404).json({ error: 'Review not found' });
+    }
+
+    review.isApproved = isApproved;
+    review.updatedAt = new Date().toISOString();
+    writeDB(db);
+    res.json(review);
+  } catch (error) {
+    console.error('Error updating review:', error);
+    res.status(500).json({ error: 'Failed to update review' });
   }
 });
 

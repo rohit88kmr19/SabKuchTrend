@@ -7,7 +7,7 @@ import AdminNavbar from '../components/AdminNavbar';
  * View and manage orders, update status, send emails
  */
 export default function AdminOrders() {
-  const { orders, updateOrderStatus, sendOrderEmail } = useAdmin();
+  const { orders, updateOrderStatus, sendOrderEmail, deleteOrder } = useAdmin();
   const [filter, setFilter] = useState('all');
   const [expandedOrder, setExpandedOrder] = useState(null);
 
@@ -20,6 +20,16 @@ export default function AdminOrders() {
   const handleSendEmail = (orderId) => {
     sendOrderEmail(orderId);
     alert('Order confirmation email sent successfully!');
+  };
+
+  const handleDeleteOrder = (orderId) => {
+    if (window.confirm('Are you sure you want to delete this order?')) {
+      deleteOrder(orderId);
+      alert('Order deleted successfully!');
+      if (expandedOrder === orderId) {
+        setExpandedOrder(null);
+      }
+    }
   };
 
   const getStatusColor = (status) => {
@@ -167,6 +177,16 @@ export default function AdminOrders() {
                         className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg font-semibold transition"
                       >
                         📧 Send Confirmation Email
+                      </button>
+                    </div>
+
+                    {/* Delete Order */}
+                    <div>
+                      <button
+                        onClick={() => handleDeleteOrder(order.id)}
+                        className="bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded-lg font-semibold transition"
+                      >
+                        🗑️ Delete Order
                       </button>
                     </div>
                   </div>

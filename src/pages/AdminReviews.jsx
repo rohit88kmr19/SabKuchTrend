@@ -6,7 +6,7 @@ import AdminNavbar from '../components/AdminNavbar';
  * Displays all customer reviews for all products
  */
 export default function AdminReviews() {
-  const { reviews, products, deleteReview } = useAdmin();
+  const { reviews, products, deleteReview, approveReview, rejectReview } = useAdmin();
 
   // Get product name by ID
   const getProductName = (productId) => {
@@ -20,6 +20,85 @@ export default function AdminReviews() {
       await deleteReview(reviewId);
       alert('Review deleted successfully!');
     }
+  };
+
+  // Handle approve review
+  const handleApproveReview = async (reviewId) => {
+    await approveReview(reviewId);
+    alert('Review approved successfully!');
+  };
+
+  // Handle reject review
+  const handleRejectReview = async (reviewId) => {
+    if (window.confirm('Are you sure you want to reject this review?')) {
+      await rejectReview(reviewId);
+      alert('Review rejected successfully!');
+    }
+  };
+
+  const getApprovalBadge = (isApproved) => {
+    if (isApproved === true) {
+      return <span className="inline-block px-3 py-1 bg-green-100 text-green-800 rounded-full text-xs font-semibold">✓ Approved</span>;
+    } else if (isApproved === false) {
+      return <span className="inline-block px-3 py-1 bg-red-100 text-red-800 rounded-full text-xs font-semibold">✗ Rejected</span>;
+    } else {
+      return <span className="inline-block px-3 py-1 bg-yellow-100 text-yellow-800 rounded-full text-xs font-semibold">⏳ Pending</span>;
+    }
+  };
+
+  const getActionButtons = (review) => {
+    // If approved: only show Delete button
+    if (review.isApproved === true) {
+      return (
+        <button
+          onClick={() => handleDeleteReview(review.id)}
+          className="text-red-600 hover:text-red-800 font-semibold transition"
+          title="Delete Review"
+        >
+          🗑️ Delete
+        </button>
+      );
+    }
+    
+    // If rejected: only show Delete button
+    if (review.isApproved === false) {
+      return (
+        <button
+          onClick={() => handleDeleteReview(review.id)}
+          className="text-red-600 hover:text-red-800 font-semibold transition"
+          title="Delete Review"
+        >
+          🗑️ Delete
+        </button>
+      );
+    }
+    
+    // If pending: show Approve, Reject, and Delete buttons
+    return (
+      <div className="flex gap-2">
+        <button
+          onClick={() => handleApproveReview(review.id)}
+          className="text-green-600 hover:text-green-800 font-semibold transition"
+          title="Approve Review"
+        >
+          ✓ Approve
+        </button>
+        <button
+          onClick={() => handleRejectReview(review.id)}
+          className="text-orange-600 hover:text-orange-800 font-semibold transition"
+          title="Reject Review"
+        >
+          ✗ Reject
+        </button>
+        <button
+          onClick={() => handleDeleteReview(review.id)}
+          className="text-red-600 hover:text-red-800 font-semibold transition"
+          title="Delete Review"
+        >
+          🗑️ Delete
+        </button>
+      </div>
+    );
   };
 
   return (
@@ -51,7 +130,8 @@ export default function AdminReviews() {
                     <th className="px-6 py-3 text-left text-sm font-semibold text-gray-800">Rating</th>
                     <th className="px-6 py-3 text-left text-sm font-semibold text-gray-800">Comment</th>
                     <th className="px-6 py-3 text-left text-sm font-semibold text-gray-800">Date</th>
-                    <th className="px-6 py-3 text-left text-sm font-semibold text-gray-800">Action</th>
+                    <th className="px-6 py-3 text-left text-sm font-semibold text-gray-800">Status</th>
+                    <th className="px-6 py-3 text-left text-sm font-semibold text-gray-800">Actions</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -79,12 +159,10 @@ export default function AdminReviews() {
                         {new Date(review.createdAt).toLocaleDateString()}
                       </td>
                       <td className="px-6 py-4 text-sm">
-                        <button
-                          onClick={() => handleDeleteReview(review.id)}
-                          className="text-red-600 hover:text-red-800 font-semibold transition"
-                        >
-                          Delete
-                        </button>
+                        {getApprovalBadge(review.isApproved)}
+                      </td>
+                      <td className="px-6 py-4 text-sm">
+                        {getActionButtons(review)}
                       </td>
                     </tr>
                   ))}

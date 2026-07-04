@@ -57,13 +57,13 @@ export default function ProductDetails() {
     }
   }, [id, adminProducts]);
 
-  // Filter reviews for this product
+  // Filter reviews for this product - only show approved reviews
   useEffect(() => {
     if (product && reviews && reviews.length > 0) {
       const productIdNum = parseInt(product.id);
       const filtered = reviews.filter((r) => {
         const reviewProductId = parseInt(r.productId);
-        return reviewProductId === productIdNum;
+        return reviewProductId === productIdNum && r.isApproved === true;
       });
       console.log('Filtering reviews:', { productId: productIdNum, total: reviews.length, filtered: filtered.length });
       setProductReviews(filtered);

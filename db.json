@@ -10,6 +10,17 @@
       "rating": 5,
       "stock": 50,
       "createdAt": "2026-05-06T10:55:00.956Z"
+    },
+    {
+      "id": 2,
+      "title": "Test",
+      "price": 67,
+      "category": "jewelery",
+      "description": "Testing Phase",
+      "image": "",
+      "rating": 4.5,
+      "stock": 50,
+      "createdAt": "2026-05-06T11:32:22.734Z"
     }
   ],
   "categories": [
@@ -18,5 +29,26 @@
     "men's clothing",
     "women's clothing"
   ],
-  "reviews": []
+  "reviews": [
+    {
+      "id": 1,
+      "productId": 1,
+      "author": "test",
+      "rating": 5,
+      "comment": "test",
+      "isApproved": true,
+      "createdAt": "2026-05-21T17:23:47.428Z",
+      "updatedAt": "2026-05-21T17:28:22.358Z"
+    },
+    {
+      "id": 2,
+      "productId": 1,
+      "author": "test",
+      "rating": 5,
+      "comment": "test",
+      "isApproved": true,
+      "createdAt": "2026-05-21T17:27:32.396Z",
+      "updatedAt": "2026-05-21T17:28:25.089Z"
+    }
+  ]
 }
